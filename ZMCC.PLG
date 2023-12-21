@@ -1,0 +1,125 @@
+--------------------Configuration: zmcc - Win32 Debug--------------------
+Begining build with project "E:\zmcc\zmcc.dsp", at root.
+Active configuration is Win32 (x86) Dynamic-Link Library (based on Win32 (x86) Dynamic-Link Library)
+
+Project's tools are:
+			"32-bit C/C++ Compiler for 80x86" with flags "/nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__ONSPEC" /FR"Debug/" /Fp"Debug/zmcc.pch" /Yu"tfalgo.h" /Fo"Debug/" /Fd"Debug/" /FD /c "
+			"OLE Type Library Maker" with flags "/nologo /D "_DEBUG" /mktyplib203 /o NUL /win32 "
+			"Win32 Resource Compiler" with flags "/l 0x804 /d "_DEBUG" "
+			"Browser Database Maker" with flags "/nologo /o"Debug/zmcc.bsc" "
+			"COFF Linker for 80x86" with flags "kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib \core\debug\corebase.lib \core\debug\zsyslib.lib \core\debug\corealgo.lib mtonsmcc\mtonsmcc.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"Debug/zmcc.pdb" /debug /machine:I386 /out:"\core\Debug/zmcc.dll" /implib:"Debug/zmcc.lib" /pdbtype:sept "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+Creating temp file "C:\WINDOWS\TEMP\RSP31B1.TMP" with contents </nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__ONSPEC" /FR"Debug/" /Fp"Debug/zmcc.pch" /Yu"tfalgo.h" /Fo"Debug/" /Fd"Debug/" /FD /c 
+"E:\zmcc\Tfini.c"
+"E:\zmcc\Tfr_all.c"
+"E:\zmcc\Tfr_mcv.c"
+"E:\zmcc\Tfw_mcv.c"
+"E:\zmcc\tffr_osr.c"
+"E:\zmcc\Tfflsr.c"
+"E:\zmcc\Tfclnkm.c"
+>
+Creating command line "cl.exe @C:\WINDOWS\TEMP\RSP31B1.TMP" 
+Creating temp file "C:\WINDOWS\TEMP\RSP31B2.TMP" with contents <kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib \core\debug\corebase.lib \core\debug\zsyslib.lib \core\debug\corealgo.lib mtonsmcc\mtonsmcc.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"Debug/zmcc.pdb" /debug /machine:I386 /out:"\core\Debug/zmcc.dll" /implib:"Debug/zmcc.lib" /pdbtype:sept 
+.\Debug\tfadshll.obj
+.\Debug\Tfalgo.obj
+.\Debug\Tfb_cv.obj
+.\Debug\Tfb_mve.obj
+.\Debug\Tfb_mvp.obj
+.\Debug\Tfc_cv.obj
+.\Debug\Tfc_mv.obj
+.\Debug\Tfc_para.obj
+.\Debug\Tfc_pred.obj
+.\Debug\Tfc_y.obj
+.\Debug\Tfcm.obj
+.\Debug\tfcomplp.obj
+.\Debug\Tfcond.obj
+.\Debug\Tfdelt.obj
+.\Debug\Tfdyopti.obj
+.\Debug\Tff_mv.obj
+.\Debug\Tffr_cv.obj
+.\Debug\Tffr_dv.obj
+.\Debug\Tffr_mv.obj
+.\Debug\tffr_sr.obj
+.\Debug\Tffreecv.obj
+.\Debug\Tffw_cv.obj
+.\Debug\Tffw_dv.obj
+.\Debug\Tffw_mv.obj
+.\Debug\tfg_aprt.obj
+.\Debug\Tfg_free.obj
+.\Debug\Tfg_h.obj
+.\Debug\Tfg_lpg.obj
+.\Debug\Tfg_sr.obj
+.\Debug\Tfillcon.obj
+.\Debug\Tfinimcc.obj
+.\Debug\Tfis_re.obj
+.\Debug\Tfis_yov.obj
+.\Debug\Tflm.obj
+.\Debug\Tflpini.obj
+.\Debug\Tflppara.obj
+.\Debug\Tfmcc.obj
+.\Debug\tfmerge.obj
+.\Debug\Tfobj.obj
+.\Debug\tfpower.obj
+.\Debug\tfpreh.obj
+.\Debug\Tfr_algo.obj
+.\Debug\Tfreccv.obj
+.\Debug\Tfrm_ill.obj
+.\Debug\Tfs_cv.obj
+.\Debug\Tfs_mv.obj
+.\Debug\Tfseq.obj
+.\Debug\Tfsqp.obj
+.\Debug\Tfsquare.obj
+.\Debug\Tfsvd.obj
+.\Debug\tfundelt.obj
+.\Debug\Tfunit.obj
+.\Debug\Tfununit.obj
+.\Debug\Tfwadd.obj
+.\Debug\Tfwbwdsu.obj
+.\Debug\Tfwchkop.obj
+.\Debug\Tfwchode.obj
+.\Debug\Tfwdrop.obj
+.\Debug\Tfwfwdsu.obj
+.\Debug\Tfwout.obj
+.\Debug\Tfwqpsol.obj
+.\Debug\Tfwqrdec.obj
+.\Debug\Tfwrtest.obj
+.\Debug\tfzinip.obj
+.\Debug\Tfmcvstr.obj
+.\Debug\TFexit.obj
+.\Debug\Tfstop.obj
+.\Debug\Tfflout.obj
+.\Debug\Tfgini.obj
+.\Debug\Tfm_para.obj
+.\Debug\Tfr_file.obj
+.\Debug\Tfcr_mcd.obj
+.\Debug\Tfnonbtn.obj
+.\Debug\Tfw_file.obj
+.\Debug\Tfini.obj
+.\Debug\Tfr_all.obj
+.\Debug\Tfr_mcv.obj
+.\Debug\Tfw_mcv.obj
+.\Debug\tffr_osr.obj
+.\Debug\Tfflsr.obj
+.\Debug\Tfclnkm.obj>
+Creating command line "link.exe @C:\WINDOWS\TEMP\RSP31B2.TMP" 
+Compiling...
+Tfini.c
+Tfr_all.c
+Tfr_mcv.c
+Tfw_mcv.c
+tffr_osr.c
+Tfflsr.c
+Tfclnkm.c
+Generating Code...
+Linking...
+   Creating library Debug/zmcc.lib and object Debug/zmcc.exp
+Tfgini.obj : error LNK2001: unresolved external symbol _File_Out_SR
+Tfini.obj : error LNK2001: unresolved external symbol _ApartSR
+\core\Debug/zmcc.dll : fatal error LNK1120: 2 unresolved externals
+Error executing link.exe.
+
+
+
+zmcc.dll - 3 error(s), 0 warning(s)

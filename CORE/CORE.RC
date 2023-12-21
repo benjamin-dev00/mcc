@@ -1,0 +1,70 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "CoreRes.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "CoreRes.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_BREAK               ICON    DISCARDABLE     "res\\Break.ico"
+IDI_STOP                ICON    DISCARDABLE     "res\\stop.ico"
+IDI_CALL                ICON    DISCARDABLE     "res\\call.ico"
+IDI_END                 ICON    DISCARDABLE     "res\\End.ico"
+IDI_EXECUTE             ICON    DISCARDABLE     "res\\Execute.ico"
+IDI_LOOP                ICON    DISCARDABLE     "res\\Loop.ico"
+IDI_NULL                ICON    DISCARDABLE     "res\\NULL.ico"
+IDI_RETURN              ICON    DISCARDABLE     "res\\Return.ico"
+IDI_START               ICON    DISCARDABLE     "res\\Start.ico"
+IDI_ICON1               ICON    DISCARDABLE     "res\\icon1.ico"
+IDI_ROOT                ICON    DISCARDABLE     "res\\icon2.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+

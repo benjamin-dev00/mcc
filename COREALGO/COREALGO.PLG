@@ -1,0 +1,43 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: corealgo - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSP65.tmp" with contents
+[
+/nologo /Gz /MTd /W3 /Gm /GX /ZI /Od /I "\z5\core" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FR"Debug/" /Fp"Debug/corealgo.pch" /Yu"prehead.h" /Fo"Debug/" /Fd"Debug/" /FD /c 
+"E:\VCWorkShop\MCC\COREALGO\A_cbdx.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSP65.tmp" 
+Creating temporary file "C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSP66.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zsyslib.lib corebase.lib acr.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"..\Debug/corealgo.pdb" /debug /machine:I386 /out:"..\debug\corealgo.dll" /implib:"..\Debug/corealgo.lib" /pdbtype:sept /libpath:"..\Debug" 
+.\Debug\A_Arithmetic.obj
+.\Debug\A_cbdx.obj
+.\Debug\A_stair.obj
+.\Debug\A_system.obj
+.\Debug\A_timer.obj
+.\Debug\A_wave.obj
+.\Debug\Algo.obj
+.\Debug\Algoreg.obj
+.\Debug\Cadshll.obj
+.\Debug\pre.obj
+.\Debug\corealgo.res
+]
+Creating command line "link.exe @C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSP66.tmp"
+<h3>Output Window</h3>
+Compiling...
+A_cbdx.c
+Linking...
+   Creating library ..\Debug/corealgo.lib and object ..\Debug/corealgo.exp
+
+
+
+<h3>Results</h3>
+corealgo.dll - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

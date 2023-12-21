@@ -1,0 +1,7 @@
+//Resource .H file for CE
+#define ICON_CE4	1
+#define ICON_CE5	2
+#define ICON_CE1	3
+#define ICON_CE2	4
+#define ICON_CE3	5
+

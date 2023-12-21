@@ -1,0 +1,37 @@
+#define DLG_1					1
+#define DLG_2					2
+#define DLG_OPEN_CORE_PROJECT	10
+
+#define IDC_OK				211
+#define IDC_CANCEL			212
+#define IDCE_REAL_UNITS		213
+#define IDCS_REAL_UNITS		214
+#define IDCG_NUMBER_UNITS	215
+#define IDCE_COREDESC		216
+#define IDCS_COREDESC		217
+#define IDCE_FACE_UNITS		218
+#define IDCS_FACE_UNITS		219
+#define IDCE_MODU_UNITS	220
+#define IDCS_MODU_UNITS	221
+#define IDCE_BOOL_UNITS		222
+#define IDCS_BOOL_UNITS		223
+#define IDCE_INT_UNITS		224
+#define IDCS_INT_UNITS		225
+#define IDCE_CP_DIR			226
+#define IDCS_CP_NAME		227
+
+#define IDC_NEW_PROJECT		401
+#define IDC_OPEN_PROJECT	402
+#define	IDCCB_CFS			403
+#define IDCCB_CBW			404
+#define IDCG_INITIATE_PROG	405
+
+#define IDC_OPFRAME1		300
+#define IDC_NPFRAME1		301
+#define IDC_OPFRAME2		302
+#define IDC_NPFRAME2		303
+#define IDC_FRAME3			304
+
+#define IDC_DIR				305
+#include <dlgs.h>
+

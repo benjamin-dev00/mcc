@@ -1,0 +1,146 @@
+
+#define DLG_MODU_MOVE	6
+#define IDC_MTU_MOVE	102
+#define IDC_NEW_PREV	104
+#define IDC_NEW_PARENT	103
+#define DIALOG_5	5
+#define DLG_FUtag	31
+#define DIALOG_4	4
+#define DLG_FUstamp	33
+#define DIALOG_3	3
+#define DLG_FUparam	32
+#define DIALOG_2	2
+#define DIALOG_1	1
+#define DLG_FU	30
+#define DLG_MU				10
+#define DLG_INPUTBOX	24
+#define DLG_MUtag			11
+#define DLG_MUalgo			13
+#define DLG_MUparam			12
+#define IDC_MUalgo_TITLE	102
+#define IDC_MUparam_TITLE	103
+#define IDC_MUtag_TITLE		101
+#define IDCB_MU_DONE		1
+#define IDCB_MU_SAVE		105
+
+#define DLG_MU_PAGE_CY		180
+#define DLG_MU_PAGE_CX		200
+
+#define IDCE_MUtag_PARENT	106
+#define IDCE_MUtag_ALGO	109
+#define IDC_GROUPBOX2	107
+#define IDCE_MUtag_TAG	110
+
+#define IDCS_MUalgo_ALGO	102
+#define IDCL_MUalgo_ALGOLIST	101
+#define IDCB_MUalgo_USE	103
+#define IDC_CHECKBOX1	105
+
+#define IDCB_MUparam_APPEND	117
+#define IDCB_MUparam_DELETE	118
+#define IDCB_MUparam_INSERT	111
+#define IDCB_MUparam_COBJ	112
+#define IDCB_FUparam_COBJ	112
+#define IDCE_MUparam_VALUE	115
+#define IDCE_MUparam_DATALINK	114
+#define IDCL_MUparam_PARAM	110
+
+#define IDC_GROUPBOX1		103
+
+#define DLG_PREFERENCES		23
+#define IDC_PREF_LATTICE	101
+#define IDC_PREF_FORM		102
+
+//Dialog
+
+#define DLG_REAL_UNIT		20
+#define IDC_RU_TAG			106
+#define IDC_RU_SAVE			107
+#define IDC_RU_DONE			105
+#define IDC_RU_ENABLE_HIHI	109
+#define IDC_RU_LOGBAND		119
+#define IDC_RU_ALARMBAND	117
+#define IDC_RU_LO			115
+#define IDC_RU_LOLO			116
+#define IDC_RU_LOG			120
+#define IDC_RU_HI			114
+#define IDC_RU_HIHI			113
+#define IDC_RU_ENABLE_LOLO	112
+#define IDC_RU_ENABLE_LO	111
+#define IDC_RU_ENABLE_HI	110
+#define IDC_RU_MAX			104
+#define IDC_RU_NEW			108
+#define IDC_RU_MIN			103
+#define IDC_RU_VALUE		102
+
+#define DLG_TINT_UNIT		21
+#define IDC_TU_TAG			106
+#define IDC_TU_SAVE			107
+#define IDC_TU_DONE			105
+#define IDC_TU_ENABLE_HIHI	109
+#define IDC_TU_LOGBAND	119
+#define IDC_TU_ALARMBAND	117
+#define IDC_TU_LO	115
+#define IDC_TU_LOLO	116
+#define IDC_TU_LOG			120
+#define IDC_TU_HI	114
+#define IDC_TU_HIHI	113
+#define IDC_TU_ENABLE_LOLO	112
+#define IDC_TU_ENABLE_LO	111
+#define IDC_TU_ENABLE_HI	110
+#define IDC_TU_MAX	104
+#define IDC_TU_NEW			108
+#define IDC_TU_MIN			103
+#define IDC_TU_VALUE		102
+
+#define DLG_BOOL_UNIT		22
+#define IDC_BU_NEW			108
+#define IDC_BU_SAVE			109
+#define IDC_BU_DONE			110
+#define IDC_BU_LOG			120
+#define IDC_BU_ALARMTRUE	114
+#define IDC_BU_ALARMFALSE	113
+#define IDC_BU_ENABLE_ALARM	107
+#define IDC_BU_TRUE	111
+#define IDC_BU_FALSE	112
+#define IDC_BU_TAG			106
+
+#define IDC_INPUTBOX_PROMPT	102
+#define IDC_INPUTBOX_VALUE	101
+
+
+#define DLG_FU_PAGE_CX		DLG_MU_PAGE_CX
+#define DLG_FU_PAGE_CY		DLG_MU_PAGE_CY
+#define IDC_FUtag_TITLE		IDC_MUtag_TITLE
+
+/*
+#define DLG_FU				DLG_FU
+#define DLG_FUtag			DLG_FUtag
+#define DLG_FUparam			DLG_FUparam
+#define DLG_FUstamp			DLG_FUalgo
+*/
+
+#define DLG_FUtag_TITLE		DLG_MUtag_TITLE
+#define IDC_FUparam_TITLE	IDC_MUparam_TITLE
+#define IDC_FUstamp_TITLE	IDC_MUalgo_TITLE
+
+#define IDCB_FU_DONE		IDCB_MU_DONE
+
+#define IDCE_FUparam_DATALINK	IDCE_MUparam_DATALINK
+#define IDCE_FUparam_VALUE		IDCE_MUparam_VALUE
+#define IDCL_FUparam_PARAM		IDCL_MUparam_PARAM
+#define IDCB_FUparam_APPEND		IDCB_MUparam_APPEND
+#define IDCB_FUparam_DELETE		IDCB_MUparam_DELETE
+#define IDCB_FUparam_INSERT		IDCB_MUparam_INSERT
+
+#define IDCL_FUstamp_STAMPLIST	IDCL_MUalgo_ALGOLIST
+#define IDCB_FUstamp_USE		IDCB_MUalgo_USE
+#define IDCS_FUstamp_STAMP		IDCS_MUalgo_ALGO
+
+#define IDCE_FUtag_TAG			IDCE_MUtag_TAG
+#define IDCE_FUtag_PARENT		IDCE_MUtag_PARENT
+#define IDCE_FUtag_STAMP		IDCE_MUtag_ALGO
+#define IDE_FUtag_PARENT		IDE_MUtag_PARENT
+#define IDE_FUtag_STAMP			IDE_MUtag_STAMP
+#define IDCB_FU_SAVE			IDCB_MU_SAVE
+

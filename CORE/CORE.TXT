@@ -1,0 +1,156 @@
+.The program must be executed under protected mode,
+ so check running mode is necessary.
+
+.The MS-Windows version must be 3.1 or later.
+
+.The data object(RT, TT, BT, MT, FT) has 4 level preveledge.
+ Level 0 is the most high level, level 3 is least. the low
+ level can't write date to high level.
+
+.Don't support direct access to bit, for example:
+	MT.UNIT-120.STATUS.VALID
+
+.Face coor, device coor and coor transform
+	Every face has its own coordinate system:
+	  . For autosize-children(AC) face, its coor origin is at its
+		left-top point, and 1 scale in X and Y is its width
+		and height.
+	  . For nonautosize-children face, its coor origin is at
+		its left-top point, and the scale in X and Y is as same
+		as its parent face coor.
+	  . Face position (X, Y, cX and cY) is using its parent
+		face coordinate system.
+	Coordinate system transform:
+	  . child face coor. to its parent coor.
+			For AC parent:
+				x(i-1) = x(i)*CX(i) + X(i);
+				y(i-1) = y(i)*CY(i) + Y(i);
+			For nonAC parent:
+				x(i-1) = x(i) + X(i);
+				y(i-1) = y(i) + Y(i);
+	  . face coor. to window coor
+			For AC window:
+				x(w) = ( (x(0) - X(0) ) * width / CX(0)
+				y(w) = ( (y(0) - Y(0) ) * height / CY(0)
+			For nonAC window:
+				x(w) = ( (x(0) - X(0) )
+				y(w) = ( (y(0) - Y(0) )
+
+.Face coor uses long or float?
+	- for speed opt. uses long, the following is test code
+
+		//lpx_, _x, _cx is float(long)
+		for(_i=1; _i<=1000000l; _i++)		//1,000,000
+		{
+			*lpx_ = ( (*lpx_) - _x ) / _cx;
+			*lpx_ = *lpx_ * _x + _cx;
+		}
+
+	  and result:
+		escaped tick counts:	12743 for float
+		escaped tick counts:	2636 for long
+
+	- but if using long, the exp.
+			*lpx_ = *lpx_ * _x + _cx;
+	  maybe overflow!
+ RESULT:
+	using float!
+
+.Change all _DLLFUNC declear to _ZZKDECL
+.FTU.position is updated in SCMD_GETINVALIDRGN and SCMD_UPDATE.
+ or other case before the face will be painted.
+
+.How to clip the faces
+/////// THIS IS THE FIRST METHOD: ////////////
+	LDirty: Lucid area in a face shape, which must be redraw bkground,
+			include the old position after the face sizes or moves;
+	ODirty: Opaque area, which is occupied by dirty faces.
+CoreStep:
+	for( each face, from Z-order bottom to top )
+	{
+		if( this is dirty )
+		{
+			LDirty += thisLDirty;
+			ODirty += thisODirty;
+
+			LDirty -= thisODirty;
+			set to RedrawFace;
+		}
+		else
+		{
+			if( thisLRgn intersect with ODirty )
+				set to RedrawFace;
+
+			LDirty -= thisORgn;
+			ODirty -= thisORgn;
+		}
+	}
+
+EraseBackground:
+	FillRgn( LDirty ) with Background color;
+
+Paint:
+	for( each face, form Z-order bottom to top )
+	{
+		if ( this is visible )
+		{
+			if( this is redraw )
+				draw this;
+
+			//the face under the transparent region should
+			//be uncovered
+			if( this is visible for LDirty )
+			{
+				draw this
+			}
+		}
+	}
+
+/////// THIS IS THE SECOND METHOD: ////////////
+	LDirty: Lucid Dirty area, which must be redraw bkground
+	ODirty: Opaque Dirty area, which is occupied by dirty faces.
+CoreStep:
+	for( each face, from Z-order bottom to top )
+	{
+		if( this is dirty )
+		{
+			LDirty += thisLDirty;
+			ODirty += thisODirty;
+
+			(or add)
+			LDirty -= thisODirty;
+		}
+	}
+
+EraseBackground:
+	FillRgn( LDirty ) with Background color;
+
+Paint:
+	for( each face, form Z-order bottom to top )
+	{
+		if ( this is visible )
+		{
+			//the face under the transparent region should
+			//be uncovered
+			if( this is visible for LDirty )
+			{
+				draw this;
+			}
+
+			//
+			if( this is dirty )
+			{
+				draw this;
+				clean this from ODirty;
+			}
+			else if( this is on ODirty )
+			{
+				draw this;
+			}
+		}
+	}
+
+/////////RESULT: I USE FIRST METHOD  /////////////
+
+
+

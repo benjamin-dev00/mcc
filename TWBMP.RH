@@ -1,0 +1,21 @@
+#ifndef __TWBMP_RH
+#define	__TWBMP_RH
+
+#define BMP_NODE3			3
+#define BMP_NODE2			2
+#define BMP_NODE1			1
+#define BMP_TB_OK_NEW1		201
+#define BMP_TB_OK_NEW2		202
+#define BMP_TB_OK_NEW3		203
+#define BMP_TB_CANCEL_NEW1	211
+#define BMP_TB_CANCEL_NEW2	212
+#define BMP_TB_CANCEL_NEW3	213
+
+#define BMP_CANCEL_1		101
+#define BMP_CANCEL_2		102
+#define BMP_CANCEL_3		103
+#define BMP_OK_1			111
+#define BMP_OK_2			112
+#define BMP_OK_3			113
+
+#endif	//__TWBMP_RH

@@ -1,0 +1,7 @@
+; DaoI.def : Declares the module parameters for the DLL.
+
+LIBRARY      "DaoI"
+DESCRIPTION  'DaoI Windows Dynamic Link Library'
+
+EXPORTS
+    ; Explicit exports can go here

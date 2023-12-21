@@ -1,0 +1,18 @@
+LIBRARY     ZZKCTRL
+
+EXETYPE     WINDOWS
+
+STUB        'WINSTUB.EXE'
+
+DESCRIPTION    'Custom CC'
+
+CODE        PRELOAD MOVEABLE DISCARDABLE
+DATA        PRELOAD MOVEABLE SINGLE
+
+EXPORTS
+	WEP                 @1  RESIDENTNAME
+	PageBtnInfo        	@2
+	PageBtnStyle        @3
+	PageBtnFlags        @4
+	PageBtnWndProc      @5
+	PageBtnDlgProc      @6

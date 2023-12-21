@@ -1,0 +1,18 @@
+#define DIALOG_2	2
+#define IDC_1	101
+#define IDC_4	104
+#define IDC_3	103
+#define IDC_2	102
+#define DLG_PS			1
+#define IDC_PS_VALUE	102
+#define IDC_PS_TABSTOPS	103
+#define IDC_PS_DISABLED	105
+#define IDC_PS_VISIBLE	106
+#define IDC_PS_GROUP	104
+#define IDC_PS_TEXT		101
+
+//input box
+#define DLG_INPUTBOX			111
+#define IDC_INPUTBOX_PROMPT	 	7
+#define IDC_INPUTBOX_VALUE 		4
+//end input box

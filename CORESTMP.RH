@@ -1,0 +1,34 @@
+//resource head file for corestmp.rc
+#define DLG_HISTREND_CONFIG	106
+#define IDC_PUSHBUTTON1 118
+#define IDC_FORCE_UPDATE    120
+#define IDC_PEN_LIST    432
+#define IDC_DELETEPEN	114
+#define IDC_APPENDPEN	113
+#define IDC_BEGIN_MONTH	101
+#define IDC_END_SECOND  112
+#define IDC_END_MINUTE  111
+#define IDC_END_HOUR    110
+#define IDC_END_DAY 109
+#define IDC_END_MONTH   108
+#define IDC_END_YEAR    107
+#define IDC_BEGIN_SECOND    106
+#define IDC_BEGIN_MINUTE    105
+#define IDC_BEGIN_HOUR  104
+#define IDC_BEGIN_DAY   103
+#define IDC_BEGIN_YEAR  102
+#define BITMAP_1    1
+#define BMP_DOWN    104
+#define BMP_UP      102
+#define BMP_LEFT    101
+#define BMP_RIGHT   100
+
+#define DLG_BOOL        101
+#define DLG_STRING      102
+#define DLG_NUMBER      103
+
+#define IDC_TRUE        101
+#define IDC_FALSE       102
+#define IDC_MINVALUE    102
+#define IDC_MAXVALUE    103
+#define IDC_VALUE       101

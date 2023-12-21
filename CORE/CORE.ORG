@@ -1,0 +1,1656 @@
+//===================================================================
+//
+//Zheng zhikai  95-4-16
+//===================================================================
+
+#include "prehead.h"
+
+#include "coreall.h"
+#include <time.h>
+#include <tchar.h>
+
+/*
+#ifdef _MSC_VER
+	__declspec( dllimport ) extern long _timezone;
+#else
+	extern long _timezone;
+#endif
+*/
+
+static BOOL _InitCore( LPCSTR lpszCoreFullName_ );
+
+RTInfo      gRTInfo;
+TTInfo      gTTInfo;
+BTInfo      gBTInfo;
+MTInfo      gMTInfo;
+FTInfo      gFTInfo;
+ATInfo      gATInfo;
+STInfo      gSTInfo;
+OTInfo      gOTInfo;
+
+CoreInfo    gCoreInfo;
+
+#ifndef _WIN32
+	FragPool    gFragPool;
+#endif
+
+DWORD       gdwLastError;
+
+static struct _tagPDT {
+	PDT  ppPDT;
+	char szFullName[16];
+	char szShortName[4];
+} sPdt[] = {
+		{PDT_NULL,      "-",            "-"},
+		{PDT_int,       "Int",          "I"},
+		{PDT_long,      "Long",         "L"},
+		{PDT_WORD,      "Word",         "W"},
+		{PDT_DWORD,     "Dword",        "D"},
+		{PDT_REAL,      "Real",         "R"},
+		{PDT_BOOL,      "Bool",         "B"},
+#ifdef _WIN32
+		{PDT_FPTR,      "Pointer",      "P"},
+		{PDT_NPTR,      "Pointer",      "P"},
+#else
+		{PDT_FPTR,      "FP",           "FP"},
+		{PDT_NPTR,      "NP",           "NP"},
+#endif	//_WIN32
+		{PDT_WRD,       "xU",           "xU"},
+
+		{PDT_WRDRTU,    "RU",           "RU"},
+		{PDT_WRDTTU,    "TU",           "TU"},
+		{PDT_WRDBTU,    "BU",           "BU"},
+		{PDT_WRDMTU,    "MU",           "MU"},
+		{PDT_WRDFTU,    "FU",           "FU"},
+
+		{PDT_LPCOBJ,    "Obj",          "O"},
+		{PDT_USER,      "User",         "?"},
+};
+
+#define GMEM_CORE   (GMEM_SHARE|GHND|GMEM_ZEROINIT)
+//...................................................................
+//Description:
+//  This function loads a corebase from files. Because ONLY ONE corebase
+//  can be loaded in memory, this function's action depends on the following
+//  three cases:
+//      (1)If no corebase in memory, this function reads the corebase files
+//         and then loads it into memory;
+//      (2)If the specified corebase has been loaded, this increases the
+//         memory corebase reference counter by one;
+//      (3)If the specified corebase is defferent from the corebase that
+//         has been loaded to memory, this returns failed;
+//  The caller can get the error code by calling GetLastCoreError();
+//
+//Entries:
+//	lpszCoreFullName_	the file name but not including extention.
+//	
+//...................................................................
+_DLLEXP BOOL _DLLFUNC LoadCore( LPCSTR lpszCoreFullName_ )
+{
+	OFSTRUCT    _of;
+
+	CLEAR_LAST_ERROR;
+
+	//the file name is parsed to standard name here
+	memset( &_of, 0, sizeof(_of) );
+	_of.cBytes = sizeof(_of);
+	OpenFile(lpszCoreFullName_, &_of, OF_PARSE );
+
+	if( !IsCorebaseValid() )
+	{   //no corebase in memory
+		memset( &gCoreInfo, 0, sizeof(gCoreInfo) );
+		if( !_ReadCore( lpszCoreFullName_ ) )
+			return FALSE;
+		else
+		{
+			//clear dirty flags
+			CoreClearDirty();
+		}
+
+		StringCopyn(gCoreInfo.szCoreFullName,
+					_of.szPathName,
+					sizeof(gCoreInfo.szCoreFullName)-1);
+
+#ifndef NDEBUG
+		//if is debug version
+		gCoreInfo.CoreOptions |= CO_ACCESSPRIVILEGE;
+#endif
+
+		if( !InitAlarmHeap() )
+		{
+			FreeCore();
+			return FALSE;
+		}
+
+		DispatchCoreMessage( 0 );
+		return TRUE;
+	}
+	else if( strcmpi( gCoreInfo.szCoreFullName, _of.szPathName ) == 0 )
+	{   //the corebase has been loaded to memory
+		DispatchCoreMessage( 0 );
+		return TRUE;
+	}
+	else
+	{
+		SET_LAST_ERROR(ERR_Other_Corebase_In_Mem);
+		return FALSE;
+	}
+
+}
+
+//...................................................................
+//Description:
+//  This function create a new corebase;
+//
+//Entries:
+//	LPCSTR lpszCoreFullName_
+//		Corebase project file name, not include file extension
+//
+//...................................................................
+_DLLEXP BOOL _DLLFUNC CreateCore(LPCSTR lpszCoreFullName_,
+								 WRD    cReal_,
+								 WRD    cTint_,
+								 WRD    cBool_,
+								 WRD    cModu_,
+								 WRD    cFace_)
+{
+	CLEAR_LAST_ERROR;
+
+	if( IsCorebaseValid() )
+	{
+		//have another corebase in memory
+		CORE_ASSERT( FALSE );
+		SET_LAST_ERROR(ERR_Other_Corebase_In_Mem);
+		return FALSE;
+	}
+
+	CORE_ASSERT( lpszCoreFullName_ );
+	if( !CreateDatabase( lpszCoreFullName_ ) )
+		return FALSE;
+
+	if(!_AllocCore(cReal_, cTint_, cBool_, cModu_, cFace_) )
+		return FALSE;
+
+	if( !_InitCore( lpszCoreFullName_ ) )
+	{
+		FreeCore();
+		return FALSE;
+	}
+
+	if( !InitAlarmHeap() )
+	{
+		FreeCore();
+		return FALSE;
+	}
+
+	if( !SaveCore() )
+	{
+		FreeCore();
+		return FALSE;
+	}
+
+	//post dirty message
+	DispatchCoreMessage( 0 );
+	return TRUE;
+}
+
+//...................................................................
+//Description:      
+//  This function allocates memory for a new corebase, and initialize
+//  gXTInfo structions, but don't initialize the tables;
+//Note:
+//  This function allocates a corebase and uses a new randmark
+//...................................................................
+BOOL _AllocCore( WRD cReal_,
+				 WRD cTint_,
+				 WRD cBool_,
+				 WRD cModu_,
+				 WRD cFace_)
+{
+	gRTInfo.wCount = (cReal_%32)?   ((int)(cReal_/32) + 1)*32   :cReal_;
+	gTTInfo.wCount = (cTint_%32)?   ((int)(cTint_/32) + 1)*32   :cTint_;
+	gBTInfo.wCount = (cBool_%32)?   ((int)(cBool_/32) + 1)*32   :cBool_;
+	gMTInfo.wCount = (cModu_%32)?  ((int)(cModu_/32) + 1)*32	:cModu_;
+	gFTInfo.wCount = (cFace_%32)?   ((int)(cFace_/32) + 1)*32   :cFace_;
+
+	gRTInfo.hBase = GlobalAlloc(GMEM_CORE, sizeof(RTU)*gRTInfo.wCount);
+	gTTInfo.hBase = GlobalAlloc(GMEM_CORE, sizeof(TTU)*gTTInfo.wCount);
+	gBTInfo.hBase = GlobalAlloc(GMEM_CORE, sizeof(BTU)*gBTInfo.wCount);
+	gMTInfo.hBase = GlobalAlloc(GMEM_CORE, sizeof(MTU)*gMTInfo.wCount);
+	gFTInfo.hBase = GlobalAlloc(GMEM_CORE, sizeof(FTU)*gFTInfo.wCount);
+
+	if(  (gRTInfo.hBase == NULL)
+	   ||(gTTInfo.hBase == NULL)
+	   ||(gBTInfo.hBase == NULL)
+	   ||(gMTInfo.hBase == NULL)
+	   ||(gFTInfo.hBase == NULL) )
+	{
+		FreeCore();
+		SET_LAST_ERROR( ERR_Global_Allocate_Failure );
+		return FALSE;
+	}
+
+	gRTInfo.lpBase = (RTU FAR*)GlobalLock(gRTInfo.hBase);
+	gTTInfo.lpBase = (TTU FAR*)GlobalLock(gTTInfo.hBase);
+	gBTInfo.lpBase = (BTU FAR*)GlobalLock(gBTInfo.hBase);
+	gMTInfo.lpBase = (MTU FAR*)GlobalLock(gMTInfo.hBase);
+	gFTInfo.lpBase = (FTU FAR*)GlobalLock(gFTInfo.hBase);
+
+	if(  (gRTInfo.lpBase == NULL)
+	   ||(gTTInfo.lpBase == NULL)
+	   ||(gBTInfo.lpBase == NULL)
+	   ||(gMTInfo.lpBase == NULL)
+	   ||(gFTInfo.lpBase == NULL) )
+	{
+		FreeCore();
+		SET_LAST_ERROR( ERR_Global_Lock_Failure );
+		return FALSE;
+	}
+
+	gRTInfo.wAdding = 1;
+	gTTInfo.wAdding = 1;
+	gBTInfo.wAdding = 1;
+	gMTInfo.wAdding = 1;
+	gFTInfo.wAdding = 1;
+
+	return TRUE;
+}
+
+//...................................................................
+//Description:
+//	This function is called by CreateCore to initialize Corebase;
+//  Creates the root module and other default nodes in Module Table;
+//	and the root face in Face Table.
+//
+//	For Modu table: four nodes are being created here:
+//		Root
+//			Step Root
+//				Loop
+//			Trigger
+//
+//	Fore Face table: a root node is being created here:
+//		Root
+//
+//	Description for the root node of Module table:
+//      the ModuBase[1] is root node
+//          szTag:      "Root"
+//          wSTatus:    MTUBIT_VALID|MTUBIT_EXPANDED
+//          Algo:       IDA_ROOT
+//          (others:    NULL)
+//	Description for the root node of Face table:
+//      the FaceBase[1] is root node
+//          Stamp:  IDS_ROOT
+//          wSTatus:    FTUBIT_VALID|FTUBIT_EXPANDED
+//          (others:    NULL)
+//
+//Note:
+//  Adds the root nodes directly to the tables, can't call CreateModu()
+//  or CreateFace() to do it because of those node without Parent;
+//...................................................................
+static BOOL _InitCore( LPCSTR lpszCoreFullName_ )
+{
+	WORD    _wNumParam;
+	WRD     _wrd, _wrdStart;
+
+	CLEAR_LAST_ERROR;
+
+	memset( &gCoreInfo, 0, sizeof(gCoreInfo) );
+
+	//........set some default values for gCoreInfo .......
+	StringCopyn(gCoreInfo.szCoreFullName,
+				lpszCoreFullName_,
+				sizeof(gCoreInfo.szCoreFullName)-1 );
+
+	//set initial values
+	gCoreInfo.lVersion = COREVERSION;
+	gCoreInfo.lRandMark = NewRandMark();
+	gCoreInfo.uInterval = 500;
+#ifndef NDEBUG
+	gCoreInfo.CoreOptions |= CO_ACCESSPRIVILEGE;
+#else	//release version
+	gCoreInfo.CoreOptions |= CO_EXCEPTIONTRAP;
+#endif
+
+	//.......... for Modu Table ..........................
+	CORE_ASSERT( (gMTInfo.wAdding == 1) );
+
+	memset( &((gMTInfo.lpBase)[1]), 0, sizeof(MTU) );
+	_wNumParam = AlgoGetNumParam( IDA_ROOT );
+	CORE_ASSERT(_wNumParam == 0); //algorithm "ROOT" is no parameters
+	(gMTInfo.lpBase)[1].Status = MTUBIT_VALID|MTUBIT_EXPANDED|MTUBIT_SYSTEM;
+	(gMTInfo.lpBase)[1].Algo = IDA_ROOT;
+	(gMTInfo.lpBase)[1].NumParam = _wNumParam;
+	ModuSetTag(1, "Root");
+	gMTInfo.wAdding ++;
+
+	//addes Step Root module
+	_wrdStart = ModuCreate("Start", MODU_ROOT, IDA_START, 0L );
+	if( _wrdStart != MODU_STEPROOT )
+	{
+		CORE_ASSERT( FALSE );
+		return FALSE;
+	}
+	gMTInfo.lpBase[_wrdStart].Status |= MTUBIT_SYSTEM;
+
+	//addes Trigger Root module
+	_wrd = ModuCreate("Trigger", MODU_ROOT, IDA_NULL, 0L);
+	if( _wrd != MODU_TRIGGERROOT )
+		return FALSE;
+	gMTInfo.lpBase[_wrd].Status |= MTUBIT_SYSTEM;
+
+	//add a default Loop module under the Step Root node
+	_wrd = ModuCreate("Loop", _wrdStart, IDA_LOOP, 0L );
+	if( !_wrd )
+		return FALSE;
+
+	//.......... for Face Table ..........................
+	CORE_ASSERT( (gFTInfo.wAdding == 1) );
+
+	memset( &((gFTInfo.lpBase)[1]), 0, sizeof(FTU) );
+
+	_wNumParam = StampGetNumParam( IDS_ROOT );
+	//Stamp "ROOT" is no parameters
+	CORE_ASSERT(_wNumParam == 0);
+
+	(gFTInfo.lpBase)[1].Status = FTUBIT_VALID|FTUBIT_EXPANDED|FTUBIT_SYSTEM;
+	(gFTInfo.lpBase)[1].Stamp = IDS_ROOT;
+	(gFTInfo.lpBase)[1].NumParam = _wNumParam;
+	gFTInfo.wAdding ++; //the lpBase[1] is root node
+
+	return TRUE;
+}
+
+//...................................................................
+//...................................................................
+BOOL InitializeSystemTables()
+{
+	int _cAlgo = GetPrivateProfileInt( "AgorithmTable",
+									   "Number",
+									   256,
+									   "core.ini");
+
+	int _cStmp = GetPrivateProfileInt( "StampTable",
+									   "Number",
+									   256,
+									   "core.ini");
+
+	int _cCobj = GetPrivateProfileInt( "CObjectTable",
+									   "Number",
+									   256,
+									   "core.ini");
+
+	CLEAR_LAST_ERROR;
+
+	gATInfo.wCount = ((int)(_cAlgo/32) + 1)*32;
+	gSTInfo.wCount = ((int)(_cStmp/32) + 1)*32;
+	gOTInfo.wCount = ((int)(_cCobj/32) + 1)*32;
+
+	gATInfo.hBase = GlobalAlloc(GMEM_CORE, sizeof(ATU)*gATInfo.wCount);
+	gSTInfo.hBase = GlobalAlloc(GMEM_CORE, sizeof(STU)*gSTInfo.wCount);
+	gOTInfo.hBase = GlobalAlloc(GMEM_CORE, sizeof(OTU)*gOTInfo.wCount);
+
+	if(  (gATInfo.hBase == NULL)
+	   ||(gSTInfo.hBase == NULL)
+	   ||(gOTInfo.hBase == NULL)
+	   )
+	{
+		SET_LAST_ERROR( ERR_Global_Allocate_Failure );
+		return FALSE;
+	}
+
+	gATInfo.lpBase = (ATU FAR*)GlobalLock(gATInfo.hBase);
+	gSTInfo.lpBase = (STU FAR*)GlobalLock(gSTInfo.hBase);
+	gOTInfo.lpBase = (OTU FAR*)GlobalLock(gOTInfo.hBase);
+
+	if(  (gATInfo.lpBase == NULL)
+	   ||(gSTInfo.lpBase == NULL)
+	   ||(gOTInfo.lpBase == NULL)
+	   )
+	{
+		SET_LAST_ERROR( ERR_Global_Lock_Failure );
+		return FALSE;
+	}
+
+	gATInfo.wAdding = 1;
+	gSTInfo.wAdding = 1;
+	gOTInfo.wAdding = 1;
+
+	if(  ( !RegisterSystemAlgos() )
+	   ||( !RegisterSystemStamps() )
+	   ||( !RegisterSystemObjects() )
+	   )
+	   return FALSE;
+
+	return TRUE;
+}
+
+//...................................................................
+//Description:
+//	This function free the current Corebase in memory.
+//...................................................................
+_DLLEXP void _DLLFUNC FreeCore()
+{
+	if(gRTInfo.hBase)
+	{
+		if(gRTInfo.lpBase)
+			GlobalUnlock(gRTInfo.hBase);
+		GlobalFree(gRTInfo.hBase);
+	}
+
+	if(gTTInfo.hBase)
+	{
+		if(gTTInfo.lpBase)
+			GlobalUnlock(gTTInfo.hBase);
+		GlobalFree(gTTInfo.hBase);
+	}
+
+	if(gBTInfo.hBase)
+	{
+		if(gBTInfo.lpBase)
+			GlobalUnlock(gBTInfo.hBase);
+		GlobalFree(gBTInfo.hBase);
+	}
+
+	if(gMTInfo.hBase)
+	{
+		if(gMTInfo.lpBase)
+			GlobalUnlock(gMTInfo.hBase);
+		GlobalFree(gMTInfo.hBase);
+	}
+
+	if(gFTInfo.hBase)
+	{
+		if(gFTInfo.lpBase)
+			GlobalUnlock(gFTInfo.hBase);
+		GlobalFree(gFTInfo.hBase);
+	}
+
+
+	memset(&gRTInfo, 0, sizeof(RTInfo));
+	memset(&gTTInfo, 0, sizeof(TTInfo));
+	memset(&gBTInfo, 0, sizeof(BTInfo));
+	memset(&gMTInfo, 0, sizeof(MTInfo));
+	memset(&gFTInfo, 0, sizeof(FTInfo));
+
+	memset(&gCoreInfo, 0, sizeof(CoreInfo));
+
+	//free FragPool
+	FragDiscard();
+	DispatchCoreMessage( 0 );
+	return;
+}
+
+//...................................................................
+//...................................................................
+void FreeSystemTables()
+{
+	if(gATInfo.hBase)
+	{
+		if(gATInfo.lpBase)
+			GlobalUnlock(gATInfo.hBase);
+		GlobalFree(gATInfo.hBase);
+	}
+
+	if(gSTInfo.hBase)
+	{
+		if(gSTInfo.lpBase)
+			GlobalUnlock(gSTInfo.hBase);
+		GlobalFree(gSTInfo.hBase);
+	}
+
+	if(gOTInfo.hBase)
+	{
+		if(gOTInfo.lpBase)
+			GlobalUnlock(gOTInfo.hBase);
+		GlobalFree(gOTInfo.hBase);
+	}
+
+	memset(&gATInfo, 0, sizeof(ATInfo));
+	memset(&gSTInfo, 0, sizeof(STInfo));
+	memset(&gOTInfo, 0, sizeof(OTInfo));
+
+	return; 
+}
+
+//...................................................................
+//Description:
+//  the func. creates a new RandMark and fills it to gCoreInfo
+//Return:
+//  returns the new RandMark
+//...................................................................
+_DLLEXP long _DLLFUNC NewRandMark()
+{
+	long    _rm;
+
+#ifdef	__BORLANDC__
+	randomize();
+#else
+	srand( (unsigned int)time(NULL) );
+#endif
+
+	_rm = MAKELONG(rand(), rand());
+
+	return _rm;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP void FAR* _DLLFUNC FragAlloc( DWORD dwBytes_ )
+{
+#ifdef _WIN32
+	return HeapAlloc( GetProcessHeap(), HEAP_ZERO_MEMORY, dwBytes_ );
+
+#else	//WIN16 version
+
+	WORD        _wSeg;
+	WORD        _wSize;
+	HGLOBAL     _hglobal;
+	WORD        _offset;
+	unsigned    _i;
+	WORD		_wBytes = LOWORD(dwBytes_);
+
+	CLEAR_LAST_ERROR;
+
+	if ( HIWORD(dwBytes_) )
+	{
+		//in WIN16 verion, the memory allocated by this
+		//function must be less than 64k;
+		SET_LAST_ERROR( ERR_Invalid_Entries );
+		return FALSE;
+	}
+
+	//allocate in the current page or following pages
+	for(_i=gFragPool.wCurrentPage; _i<POOL_MAX_PAGE; _i++)
+	{
+		_hglobal = gFragPool.hPage[_i];
+		if(_hglobal == 0)
+			continue;
+
+		_wSeg = gFragPool.wPage[_i];
+		_asm
+		{
+			push    ds
+			mov     ax, _wSeg
+			mov     ds, ax
+		}
+		_offset = (WORD)LocalAlloc(LPTR, _wBytes);
+		_asm {pop   ds}
+
+		if(_offset == 0)
+			continue;
+		else
+			return (void FAR*)MAKELONG(_offset, _wSeg);
+	}
+
+	//if allocating fail, do it in the previous pages
+	for(_i=0; _i<gFragPool.wCurrentPage; _i++)
+	{
+		_hglobal = gFragPool.hPage[_i];
+		if(_hglobal == 0)
+			continue;
+
+		_wSeg = gFragPool.wPage[_i];
+		_asm
+		{
+			push    ds
+			mov     ax, _wSeg
+			mov     ds, ax
+		}
+		_offset = (WORD)LocalAlloc(LPTR, _wBytes);
+		_asm {pop   ds}
+
+		if(_offset == 0)
+			continue;
+		else
+		{
+			gFragPool.wCurrentPage = _i;
+			return (void FAR*)MAKELONG(_offset, _wSeg);
+		}
+	}
+
+	//create a new page and allocate in it
+	for(_i=0; _i<POOL_MAX_PAGE; _i++)
+	{
+		if(gFragPool.hPage[_i] == 0)    //find a free item in page table
+		{
+			_hglobal = GlobalAlloc(GMEM_CORE, POOL_DEFAULT_PAGE_SIZE);
+			if(!_hglobal)   //global allocating failure
+			{
+				SET_LAST_ERROR( ERR_Global_Allocate_Failure );
+				return 0L;
+			}
+
+			_wSeg = HIWORD(GlobalLock(_hglobal));
+			if(_wSeg == 0)  //global locking failure
+			{
+				SET_LAST_ERROR( ERR_Global_Lock_Failure );
+				return 0L;
+			}
+
+			_wSize = (WORD)GlobalSize(_hglobal) - 16;
+			if(LocalInit(_wSeg, 0, _wSize))
+			{
+				_asm{
+					push    ds
+					mov     ax, _wSeg
+					mov     ds, ax
+				}
+				_offset = (WORD)LocalAlloc(LPTR, _wBytes);
+				_asm {pop   ds}
+
+				if(_offset)
+				{
+					gFragPool.wCurrentPage = _i;
+					gFragPool.hPage[_i] = _hglobal;
+					gFragPool.wPage[_i] = _wSeg;
+					return (void FAR*)MAKELONG(_offset, _wSeg);
+				}
+				else    //LocalAlloc failure
+				{
+					GlobalUnlock(_hglobal);
+					GlobalFree(_hglobal);
+
+					SET_LAST_ERROR( ERR_Local_Allocate_Failure );
+					return 0L;
+				}
+			}
+			else    //LocalInit failure
+			{
+				GlobalUnlock(_hglobal);
+				GlobalFree(_hglobal);
+
+				SET_LAST_ERROR( ERR_LocalInit_Failure );
+				return 0L;
+			}
+		}
+	}
+
+	//frag pool full
+	SET_LAST_ERROR( ERR_FragPool_Full );
+	return 0L;
+
+#endif	//whether WIN32 or WIN16 version
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP void FAR* _DLLFUNC FragRealloc( void FAR* lp_, DWORD dwBytes_ )
+{
+#ifdef _WIN32
+	return HeapReAlloc( GetProcessHeap(),
+						HEAP_ZERO_MEMORY,
+						lp_,
+						dwBytes_ );
+
+#else	//WIN16 version
+
+	WORD        _segment = HIWORD(lp_);
+	WORD        _offset = LOWORD(lp_);
+	WORD		_wBytes;
+	WORD        _wOldSize;
+	HLOCAL      _ret;
+	unsigned    _i;
+
+	CLEAR_LAST_ERROR;
+
+	if ( HIWORD(dwBytes_) )
+	{
+		//in WIN16 verion, the memory allocated by this
+		//function must be less than 64k;
+		SET_LAST_ERROR( ERR_Invalid_Entries );
+		return FALSE;
+	}
+
+	_wBytes = LOWORD(dwBytes_);
+
+	if(_segment == 0)
+	{
+		SET_LAST_ERROR( ERR_Invalid_Entries );
+		return FALSE;
+	}
+
+	for(_i=0; _i<POOL_MAX_PAGE; _i++)
+	{
+		if(gFragPool.wPage[_i] == _segment)
+		{
+			_asm
+			{
+				push    ds
+				mov     ax, _segment
+				mov     ds, ax
+			}
+
+			//get size for the following operation
+			_wOldSize = LocalSize((HLOCAL)_offset);
+
+			_ret = LocalReAlloc((HLOCAL)_offset, _wBytes, LMEM_ZEROINIT);
+
+			_asm{pop    ds}
+
+			if( _ret )
+				return (void far*)MAKELONG(_ret, _segment);
+			else
+			{
+				void far* _lp;
+
+				//reallocate in the same page failure
+				//and allocate again.
+				_lp = FragAlloc(_wBytes);
+				if(!_lp)                //allocate failure
+				{
+					SET_LAST_ERROR( ERR_Local_Allocate_Failure );
+					return NULL;
+				}
+
+				//copy the content of the memory
+				memcpy( _lp, lp_, (_wOldSize>_wBytes)? _wBytes: _wOldSize );
+
+				//free the old block
+				FragFree(lp_);
+
+				return _lp;
+			}
+		}
+		else
+			continue;
+	}
+
+	//no found _segment in page table
+	SET_LAST_ERROR( ERR_Invalid_Entries );
+	return FALSE;
+
+#endif	//whether WIN32 or WIN16 version
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP BOOL _DLLFUNC FragFree(void FAR* lp_)
+{
+#ifdef _WIN32 
+	return HeapFree( GetProcessHeap(), 	0, lp_ );
+
+#else	//WIN16 version
+
+	WORD _segment = HIWORD(lp_);
+	WORD _offset = LOWORD(lp_);
+	HLOCAL _ret;
+	unsigned _i;
+
+	CLEAR_LAST_ERROR;
+
+	if(_segment == 0)
+	{
+		SET_LAST_ERROR( ERR_Invalid_Entries );
+		return FALSE;
+	}
+
+	for(_i=0; _i<POOL_MAX_PAGE; _i++)
+	{
+		if(gFragPool.wPage[_i] == _segment)
+		{
+			_asm
+			{
+				push    ds
+				mov     ax, _segment
+				mov     ds, ax
+			}
+			_ret = LocalFree((HLOCAL)_offset);
+			_asm{pop    ds}
+
+			if(_ret == NULL)    //if _ret = NULL, LocalFree successfully
+				return TRUE;
+			else
+			{
+				SET_LAST_ERROR( ERR_LocalFree_Failure );
+				return FALSE;
+			}
+
+		}
+		else
+			continue;
+	}
+
+	//no found _segment in page table
+	SET_LAST_ERROR( ERR_Invalid_Entries );
+	return FALSE;
+
+#endif	//whether WIN32 or WIN16 version
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP DWORD _DLLFUNC FragSize(void FAR* lp_)
+{
+#ifdef _WIN32 
+	return HeapSize( GetProcessHeap(), 	0, lp_ );
+
+#else	//WIN16 version
+
+	WORD        _segment = HIWORD(lp_);
+	WORD        _offset = LOWORD(lp_);
+	WORD        _size;
+	unsigned    _i;
+
+	CLEAR_LAST_ERROR;
+
+	if(_segment == 0)
+	{
+		SET_LAST_ERROR( ERR_Invalid_Entries );
+		return 0;
+	}
+
+	for(_i=0; _i<POOL_MAX_PAGE; _i++)
+	{
+		if(gFragPool.wPage[_i] == _segment)
+		{
+			_asm
+			{
+				push    ds
+				mov     ax, _segment
+				mov     ds, ax
+			}
+			_size = LocalSize((HLOCAL)_offset);
+			_asm{pop    ds}
+
+			return _size;
+		}
+		else
+			continue;
+	}
+
+	//no found _segment in page table
+	SET_LAST_ERROR( ERR_Invalid_Entries );
+	return 0;
+
+#endif	//whether WIN32 or WIN16 version
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP BOOL _DLLFUNC FragDiscard()
+{
+#ifdef _WIN32 
+	return TRUE;
+
+#else	//WIN16 version
+
+	unsigned _i;
+
+	for(_i=0; _i<POOL_MAX_PAGE; _i++)
+	{
+		if(gFragPool.hPage)
+		{
+			GlobalUnlock(gFragPool.hPage[_i]);
+			GlobalFree(gFragPool.hPage[_i]);
+		}
+	}
+
+	memset(&gFragPool, 0, sizeof(FragPool));
+	return TRUE;
+
+#endif	//whether WIN32 or WIN16 version
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP CoreInfo FAR* _DLLFUNC GetCoreInformation()
+{
+	return &gCoreInfo;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP MTInfo FAR* _DLLFUNC GetModuTableInformation()
+{
+	return &gMTInfo;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP FTInfo FAR* _DLLFUNC GetFaceTableInformation()
+{
+	return &gFTInfo;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP ATInfo FAR* _DLLFUNC GetAlgoTableInformation()
+{
+	return &gATInfo;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP STInfo FAR* _DLLFUNC GetStampTableInformation()
+{
+	return &gSTInfo;
+}
+
+//...................................................................
+//Description:
+//...................................................................
+_DLLEXP LPCOBJ _DLLFUNC AllocCString( LPCSTR lpsz_, BOOL FAR* lpbOk_ )
+{
+	LPCOBJ  _lpCobj;
+
+	if( lpsz_ && (*lpsz_) )
+	{
+		_lpCobj = CobjAlloc( IDCOBJ_STRING, strlen(lpsz_) + 1 );
+
+		if( !_lpCobj )
+		{
+			if( lpbOk_ )
+				*lpbOk_ = FALSE;
+
+			return NULL;
+		}
+
+		strcpy( (LPSTR)_lpCobj, lpsz_ );
+	}
+	else
+		_lpCobj = NULL;
+
+	if( lpbOk_ )
+		*lpbOk_ = TRUE;
+
+	return _lpCobj;
+}
+
+//...................................................................
+//Description:
+//Note:
+//  Here, the tag beginning with '#' is illegal.
+//...................................................................
+_DLLEXP LPCOBJ _DLLFUNC AllocTag( LPCSTR lpszTag_, BOOL FAR* lpbOk_ )
+{
+	return AllocCString( lpszTag_, lpbOk_ );
+}
+
+//...................................................................
+//Description:
+//	Check and format a string to be a tag.
+//		. strip the left and rightn white-space char
+//		. check whether the string is a legal tag string
+//		. allocate a new tag
+//...................................................................
+_DLLEXP LPCOBJ _DLLFUNC CoreCheckAndFormatTag( LPCSTR lpszTag_, BOOL* lpbOk_ )
+{
+	static TCHAR	_szTag[CORE_MAX_TAG_LENGTH];
+
+	if( !lpszTag_ )
+	{
+		if( lpbOk_ ) *lpbOk_ = TRUE;
+		return NULL;
+	}
+
+	StringStripSpace(_szTag, CORE_MAX_TAG_LENGTH, lpszTag_ );
+
+	if( !IsTagLegal( _szTag ) )
+	{
+		if( lpbOk_ ) *lpbOk_ = FALSE;
+		return NULL;
+	}
+
+	return AllocTag( _szTag, lpbOk_ );
+}
+
+//...................................................................
+//Description:
+//Note:
+//  Here, the tag beginning with '#' is illegal.
+//...................................................................
+_DLLEXP BOOL _DLLFUNC IsTagLegal(LPCSTR szTag_)
+{
+	const char FAR* _c;
+
+	CLEAR_LAST_ERROR;
+
+	if(!szTag_)
+	{
+		CORE_ASSERT(0);
+		SET_LAST_ERROR( ERR_Invalid_Entries );
+		return FALSE;
+	}
+
+	for(_c = szTag_; *_c; _c++)
+	{
+		if( (*_c>='@') && (*_c<='Z') ) continue;
+		if( (*_c>='a') && (*_c<='z') ) continue;
+		if( (*_c>='0') && (*_c<='9') ) continue;
+		if(*_c == '$') continue;
+		if(*_c == '%') continue;
+		if(*_c == '-') continue;
+		if(*_c == '_') continue;
+		if(*_c == '/') continue;
+
+		SET_LAST_ERROR( ERR_Illegal_Tag );
+
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+//...................................................................
+//Description:
+//Note:
+//  This function is not designed for comparing the tags like "#0000" ,
+//  and s1_, s2_ can be NULL string
+//...................................................................
+_DLLEXP int _DLLFUNC CmpTag(LPCSTR s1_, LPCSTR s2_, size_t maxlen_)
+{
+	//NULL is valid entry
+	if( (!s1_) && (!s2_) )	
+		return 0;
+
+	if( (!s1_) || (!s2_) )
+		return 1;
+
+	if( IS_CO_TAGCASESENSITIVITY() )
+		return strncmp(s1_, s2_, maxlen_);
+	else
+		return strnicmp(s1_, s2_, maxlen_);
+}
+
+//...................................................................
+//Description:
+//  Format:     #[[0-9]...]
+//              #(x|X)[[0-9][a-f][A-F]...]
+//...................................................................
+_DLLEXP WRD _DLLFUNC TagToWRD(LPCSTR szTag_)
+{
+	return TagToWRDEx( szTag_, NULL );
+}
+
+//...................................................................
+//Description:
+//  Format:     #[[0-9]...]
+//              #(x|X)[[0-9][a-f][A-F]...]
+//...................................................................
+_DLLEXP WRD _DLLFUNC TagToWRDEx(LPCSTR szTag_, BOOL FAR* lpbOkey_ )
+{
+	if( lpbOkey_ ) *lpbOkey_ = TRUE;
+			
+	while( *szTag_ <= ' ' ) szTag_++;	//skip the pre-whitespaces
+
+	if( !strcmp(szTag_, "0") )
+	{
+		if( lpbOkey_ )
+			*lpbOkey_ = TRUE;
+
+		return 0;
+	}
+
+	if(*szTag_ != '#')
+	{
+		CORE_ASSERT( FALSE );
+
+		if( lpbOkey_ )
+			*lpbOkey_ = FALSE;
+
+		return 0;
+	}
+
+	szTag_++;   //check the second char
+
+	if( (*szTag_ != 'x') && (*szTag_ != 'X') )
+		return (WRD)atol(szTag_);
+	else
+	{
+		WRD _wrd;
+		sscanf(szTag_+1, "%x", &_wrd);
+		return _wrd;
+	}
+}
+
+//...................................................................
+//Description:
+//  Retrieves TAG by WRD
+//...................................................................
+_DLLEXP void _DLLFUNC WRDToTag(WRD wrd_, LPSTR lpszTag_, WORD wSize_)
+{
+	char    _szBuffer[32];
+	sprintf(_szBuffer, "#%i", wrd_);
+	StringCopyn(lpszTag_, _szBuffer, wSize_);
+
+	return ;
+}
+
+//...................................................................
+//Description:
+//Note:
+//  the old funtion name:   GetSystemPDTName
+//...................................................................
+_DLLEXP BOOL _DLLFUNC GetPDTName(PDT pdt_, LPSTR szName_, int size_, WORD wAccess_)
+{
+	WORD    _i;
+	BOOL    _ret = FALSE;
+
+	CORE_ASSERT( szName_ && size_ );
+
+	*szName_ = 0;
+	for(_i=0; _i<sizeof(sPdt)/sizeof(sPdt[0]); _i++)
+	{
+		if( pdt_ == sPdt[_i].ppPDT )
+		{
+			strcpy(szName_, (wAccess_ & AM_SHORTNAME) ?sPdt[_i].szShortName
+													  :sPdt[_i].szFullName);
+			_ret = TRUE;
+			break;
+		}
+	}
+
+	if( _ret )
+		if(wAccess_ & AM_ENABLE_UL)
+			if(wAccess_ & AM_UPPER)
+				AnsiUpper(szName_);
+			else
+				AnsiLower(szName_);
+
+	return _ret;
+}
+
+//...................................................................
+//Description:
+//  the old function name: GetSystemIMM
+//...................................................................
+_DLLEXP PDT _DLLFUNC GetPDT(LPSTR szName_, BOOL FAR* lpbOk_ )
+{
+	unsigned    _i;
+
+	for( _i=0; _i<sizeof(sPdt)/sizeof(sPdt[0]); _i++ )
+	{
+		//Compares two strings, without case sensitivity
+		if( strcmpi(sPdt[_i].szShortName, szName_) == 0 )
+		{
+			if( lpbOk_ ) *lpbOk_ = TRUE;
+			return sPdt[_i].ppPDT;
+		}
+
+		//Compares two strings, without case sensitivity
+		if( strcmpi(sPdt[_i].szFullName, szName_) == 0 )
+		{
+			if( lpbOk_ ) *lpbOk_ = TRUE;
+			return sPdt[_i].ppPDT;
+		}
+	}
+
+	if( lpbOk_ ) *lpbOk_ = FALSE;
+	return 0;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP void _DLLFUNC CoreSetDirty()
+{
+	gCoreInfo.bDirty = TRUE;
+	return;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP void _DLLFUNC CoreClearDirty()
+{
+	WRD		_i;
+
+	gCoreInfo.bDirty = FALSE;
+
+	RealClearTableDirty();
+	TintClearTableDirty();
+	BoolClearTableDirty();
+	for(_i=1; _i<gMTInfo.wAdding; _i++)
+		ModuClearDirty( _i );
+	for(_i=1; _i<gFTInfo.wAdding; _i++)
+		FaceClearDirty( _i );
+
+	return;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP BOOL _DLLFUNC IsCoreDirty()
+{
+	
+	return	gCoreInfo.bDirty ||
+			IsModuTableDirty(TRUE) ||
+			IsFaceTableDirty(TRUE) ||
+			IsRealTableDirty(TRUE) ||
+			IsBoolTableDirty(TRUE) ||
+			IsTintTableDirty(TRUE);
+}
+
+//...................................................................
+//Description:
+//  Retrieve the information of the reference;
+//Note:
+//  The function checks the reference from the specified start point,
+//  and the start point is the next parameter which is specified in
+//  the struct lpCoreRef_;
+//Entries:
+//  WORD wTable_            specifies table which the wrd_ is owned to
+//  WRD wrd_                specifies the WRD of the xTU
+//  BOOL bSkipSelf_         speifies whether skip self-reference
+//                              TRUE    skip this
+//                              FALSE   do not skip this
+//  LPCOREREF lpCoreRef_
+//                          specifies the begin point to search reference
+//                              NULL    search all tables
+//                              VALID   search from the next parameter
+//                                      from lpCoreRef_
+//...................................................................
+_DLLEXP BOOL _DLLFUNC GetReference(WORD wTable_, WRD wrd_, BOOL bSkipSelf_, LPCOREREF lpCoreRef_ )
+{
+	WRD     _i;     //loop var. for the xTUs
+	WORD    _j;     //loop var. for the parameters
+	BOOL    _mt_first_loop = FALSE, _ft_first_loop = FALSE;
+
+	if( lpCoreRef_ )
+		if( lpCoreRef_->wTable == TB_FT )
+		{
+			//search from FaceTable
+			goto _Label_TB_FT;
+		}
+	else
+	{
+		//search from ModuTable
+		_mt_first_loop = TRUE;
+	}
+
+	//search the references in Modu Table
+	for(_i = (lpCoreRef_? lpCoreRef_->wrd : 0);
+		_i<gMTInfo.wAdding;
+		_i++)
+	{
+		LPPU    _lppu;
+		WORD    _wnum;
+
+		if( ! ( (gMTInfo.lpBase)[_i].Status & MTUBIT_VALID ) )
+		{
+			_mt_first_loop = FALSE;
+			continue;
+		}
+
+		_lppu = (gMTInfo.lpBase)[_i].lpParam;
+		_wnum = (gMTInfo.lpBase)[_i].NumParam;
+
+		if( (!_wnum) || (!_lppu)  )     //if no parameters
+		{
+			CORE_ASSERT( (!_wnum) && (!_lppu) );
+			_mt_first_loop = FALSE;
+			continue;   //to next
+		}
+
+		//search in parameters
+		if( _mt_first_loop )
+		{
+			//at the first loop, searching begins with the entry that
+			//is specified in the struct lpCoreRef_, if the lpCoreRef_
+			//is valid. NOTE: this is
+			//  ( lpCoreRef_->wParam + 1 )
+			//but not
+			//  ( lpCoreRef_->wParam )
+			_j = lpCoreRef_? (lpCoreRef_->wParam+1) : 0;
+			_mt_first_loop = FALSE;
+		}
+		else
+			_j = 0;
+
+		for(;
+			_j<_wnum;
+			_j++, _lppu++ )
+		{
+			if( _lppu->du.zzk__WRD == wrd_ )
+			{
+				if(     //IF fit for one of three conditions
+					  ( (_lppu->prefix&(PF_MASK|TBX_MASK)) == (PF_TBX|wTable_)  )
+				   || ( (wTable_ == TB_MT) && ((_lppu->prefix&PF_MASK)==PF_MPX) )
+				   || ( (wTable_ == TB_FT) && ((_lppu->prefix&PF_MASK)==PF_FPX) )
+				   )
+				{
+					//referenced xTU is found
+					if(  ( bSkipSelf_ == TRUE )
+					   &&( wTable_ == TB_MT )
+					   &&( wrd_ == _i ) )
+					{
+						//if the reference is itself and bSkipSelf_ is TRUE,
+						//skip itself!
+						continue;
+					}
+
+					if( lpCoreRef_ )
+					{
+						lpCoreRef_->wTable = TB_MT;
+						lpCoreRef_->wrd = _i;
+						lpCoreRef_->wParam = _j;
+						memcpy( &(lpCoreRef_->pu), _lppu, sizeof(PU) );
+
+						return TRUE;
+					}
+					else
+						return TRUE;
+				}
+			}
+		}   //end FOR (in parameters array)
+	}   //end FOR(in Modu Table)
+
+	//................................................
+	//search the references in Face Table
+_Label_TB_FT:
+
+	_i = 1;                     //initialize value
+	_ft_first_loop = FALSE;     //initialize value
+	if( lpCoreRef_ )
+		if( lpCoreRef_->wTable == TB_FT )
+		{
+			_ft_first_loop = TRUE;
+			_i = lpCoreRef_->wrd;
+		}
+
+	for(;
+		_i<gFTInfo.wAdding;
+		_i++)
+	{
+		LPPU    _lppu;
+		WORD    _wnum;
+
+		if( !( (gFTInfo.lpBase)[_i].Status & FTUBIT_VALID) )
+		{
+			_ft_first_loop = FALSE;
+			continue;
+		}
+
+		_lppu = (gFTInfo.lpBase)[_i].lpParam;
+		_wnum = (gFTInfo.lpBase)[_i].NumParam;
+
+		if( (!_wnum) || (!_lppu)  )     //if no parameters
+		{
+			CORE_ASSERT( (!_wnum) && (!_lppu) );
+			_ft_first_loop = FALSE;
+			continue;   //to next
+		}
+
+		//search in parameters
+		if( _ft_first_loop )
+		{
+			_j = (lpCoreRef_? (lpCoreRef_->wParam+1) : 0);
+			_ft_first_loop = FALSE;
+		}
+		else
+			_j = 0;
+
+		for(;
+			_j<_wnum;
+			_j++, _lppu++ )
+		{
+			if( _lppu->du.zzk__WRD == wrd_ )
+			{
+				if(     //IF fit for one of three conditions
+					  ( (_lppu->prefix&(PF_MASK|TBX_MASK)) == (PF_TBX|wTable_)  )
+				   || ( (wTable_ == TB_MT) && ((_lppu->prefix&PF_MASK)==PF_MPX) )
+				   || ( (wTable_ == TB_FT) && ((_lppu->prefix&PF_MASK)==PF_FPX) )
+				   )
+				{
+					//referenced xTU is found
+					if(  ( bSkipSelf_ == TRUE )
+					   &&( wTable_ == TB_FT )
+					   &&( wrd_ == _i ) )
+					{
+						//if the reference is itself and bSkipSelf_ is TRUE,
+						//skip itself!
+						continue;
+					}
+
+					if( lpCoreRef_ )
+					{
+						lpCoreRef_->wTable = TB_FT;
+						lpCoreRef_->wrd = _i;
+						lpCoreRef_->wParam = _j;
+						memcpy( &(lpCoreRef_->pu), _lppu, sizeof(PU) );
+
+						return TRUE;
+					}
+					else
+						return TRUE;
+				}
+			}
+		}   //end FOR (in parameters array)
+	}   //end FOR(in Face Table)
+
+	return FALSE;
+}
+
+//...................................................................
+//Description:
+//  Retrieve data of the gCoreInfo;
+//...................................................................
+_DLLEXP DWORD _DLLFUNC CoreGetData( WORD wCoreElement_ )
+{
+	switch( wCoreElement_ )
+	{
+		//get options
+		case CGD_TAGCASESENSITIVITY:
+			return (DWORD)IS_CO_TAGCASESENSITIVITY();
+		case CGD_ACCESSPRIVILEGE:
+			return (DWORD)IS_CO_ACCESSPRIVILEGE();
+		case CGD_LOGHISTORY:
+			return (DWORD)IS_CO_LOGHISTORY();
+		case CGD_BOOLDOUBLELIMITALARM:
+			return (DWORD)IS_CO_BOOLDOUBLELIMITALARM();
+		case CGD_USEFINIT:
+			return (DWORD)IS_CO_USEFINIT();
+		case CGD_EXCEPTIONTRAP:
+			return (DWORD)IS_CO_EXCEPTIONTRAP();
+
+		case CGD_TITLE:
+			return (DWORD)&(gCoreInfo.szTitle);
+		case CGD_DESCRIPTION:
+			return (DWORD)&(gCoreInfo.szDescription);
+		case CGD_FULLNAME:
+			return (DWORD)&(gCoreInfo.szCoreFullName);
+		case CGD_INTERVAL:
+			return (DWORD)gCoreInfo.uInterval;
+		case CGD_CURFACE:
+			return gCoreInfo.wCurFace;
+		case CGD_LASLOGTIME:
+			return (DWORD)gCoreInfo.LastLogTime;
+
+		//read-only section:
+		case CGD_VERSION:	//read-only
+			return (DWORD)gCoreInfo.lVersion;
+		case CGD_RANDMARK:	//read-only
+			return (DWORD)gCoreInfo.lRandMark;
+		case CGD_COREFULLNAME:	//read-only
+			return (DWORD)&(gCoreInfo.szCoreFullName);
+		case CGD_RUNTIME:	//inner value, read-only
+			return (DWORD)gCoreInfo.bRunTime;
+		case CGD_IDTIMER:	//inner value, read-only
+			return (DWORD)gCoreInfo.idTimer;
+		case CGD_TICK:		//inner value, read-only
+			return (DWORD)gCoreInfo.tick;
+
+		default:
+			CORE_ASSERT( FALSE );
+			return 0;
+	}	//end switch
+}
+
+//...................................................................
+//Description:
+//
+//...................................................................
+_DLLEXP BOOL _DLLFUNC CoreSetData( WORD wCoreElement_, DWORD data_ )
+{
+	BOOL	_ret = TRUE;
+
+	switch( wCoreElement_ )
+	{
+		case CGD_TAGCASESENSITIVITY:	//CO_TAGCASESENSITIVITY
+			gCoreInfo.CoreOptions = data_? gCoreInfo.CoreOptions|CO_TAGCASESENSITIVITY: gCoreInfo.CoreOptions & (~CO_TAGCASESENSITIVITY);
+			break;
+		case CGD_ACCESSPRIVILEGE:
+			gCoreInfo.CoreOptions = data_? gCoreInfo.CoreOptions|CO_ACCESSPRIVILEGE: gCoreInfo.CoreOptions & (~CO_ACCESSPRIVILEGE);
+			break;
+		case CGD_LOGHISTORY:	//CO_LOGHISTORY
+			gCoreInfo.CoreOptions = data_? gCoreInfo.CoreOptions|CO_LOGHISTORY: gCoreInfo.CoreOptions & (~CO_LOGHISTORY);
+			break;
+		case CGD_BOOLDOUBLELIMITALARM:
+			gCoreInfo.CoreOptions = data_? gCoreInfo.CoreOptions|CO_BOOLDOUBLELIMITALARM: gCoreInfo.CoreOptions & (~CO_BOOLDOUBLELIMITALARM);
+			break;
+		case CGD_USEFINIT:
+			gCoreInfo.CoreOptions = data_? gCoreInfo.CoreOptions|CO_USEFINIT: gCoreInfo.CoreOptions & (~CO_USEFINIT);
+			break;
+		case CGD_EXCEPTIONTRAP:
+			gCoreInfo.CoreOptions = data_? gCoreInfo.CoreOptions|CO_EXCEPTIONTRAP: gCoreInfo.CoreOptions & (~CO_EXCEPTIONTRAP);
+			break;
+
+		case CGD_TITLE:
+			StringCopyn( gCoreInfo.szTitle, (LPSTR)data_, sizeof(gCoreInfo.szTitle)-1 );
+			break;
+		case CGD_DESCRIPTION:
+			StringCopyn( gCoreInfo.szDescription, (LPSTR)data_, sizeof(gCoreInfo.szDescription)-1 );
+			break;
+		case CGD_INTERVAL:
+			gCoreInfo.uInterval = (UINT)data_;
+			break;
+		case CGD_CURFACE:
+			gCoreInfo.wCurFace = (WRD)data_; 	
+			break;
+
+		case CGD_LASLOGTIME:
+			gCoreInfo.LastLogTime = data_;
+			break;
+
+		case CGD_VERSION:	//read-only
+		case CGD_RANDMARK:	//read-only
+		case CGD_COREFULLNAME:	//read-only
+		case CGD_RUNTIME:	//inner value, read-only
+		case CGD_IDTIMER:	//inner value, read-only
+		case CGD_TICK:		//inner value, read-only
+			return FALSE;
+
+		default:
+			CORE_ASSERT( FALSE );
+			return FALSE;
+	}	//end switch
+
+	CoreSetDirty();
+	return TRUE;
+}
+
+//...................................................................
+//Description:
+//	This function free the memory for the parameter array of
+//Modu or Face;
+//...................................................................
+_DLLEXP BOOL _DLLFUNC FreeParameter( LPPU lpPrm_, WORD wNumParam_ )
+{
+	if( lpPrm_ )
+	{
+		WORD	_i;
+
+		//delete all core objects
+		for( _i=0; _i<wNumParam_; _i++ )
+		{
+			if( (lpPrm_[_i]).prefix == (PF_IMM|IMM_LPCOBJ) )
+				CobjFree( (lpPrm_[_i]).du.zzk__LPCOBJ );
+		}
+		ParamFree( lpPrm_ );
+	}
+
+	return TRUE;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP BOOL _DLLFUNC CoreTime2tm( CORETIME ct_, struct tm _FAR* lptm_ )
+{
+	struct tm _FAR* _lp = gmtime( (time_t *)&ct_ );
+
+	memcpy( lptm_, _lp, sizeof(struct tm) );
+	return  TRUE;
+}
+
+//...................................................................
+//...................................................................
+_DLLEXP CORETIME _DLLFUNC tm2CoreTime(  struct tm _FAR* lptm_ )
+{
+	return (CORETIME)mktime( lptm_ )  - _timezone;
+}
+
+//...................................................................
+//Description:
+//
+//...................................................................
+_DLLEXP CORETIME _DLLFUNC CoreTimeNow()
+{
+	time_t	_tt;
+	return	(CORETIME)time( &_tt )  - _timezone;
+}
+
+//...................................................................
+//Description:
+//	
+//...................................................................
+_DLLEXP BOOL _DLLFUNC IsCorebaseValid()
+{
+	return (gCoreInfo.lVersion)? TRUE : FALSE;
+}
+
+
+//...................................................................
+//Description:
+//	This function try to free a block memory pointed by lp_,
+//	if it is an illegal pointer, returns FALSE with doing nothing.
+//...................................................................
+BOOL _NONEXPORTED _FreeTraceData( LPTRACE lp_ )
+{
+#ifndef	WIN32
+	return FragFree( lp_ );
+#else
+
+	//WIN32 here 
+	__try 
+	{
+		return FragFree( lp_ );
+	}
+	__except( EXCEPTION_EXECUTE_HANDLER )
+	{
+		return FALSE;
+	}
+#endif	//WIN32
+
+}
+
+_DLLEXP DWORD _DLLFUNC CoreGetLastError()
+{
+	extern DWORD gdwLastError;
+
+	return gdwLastError; 
+}
+
+//#define PARAMALLOC(_size_)	( (LPPU)FragAlloc( _size_ * sizeof(PU) ) )
+//#define PARAMFREE(p)		FragFree(p)
+
+_DLLEXP LPPU _DLLFUNC ParamAlloc( int numParam_ )
+{
+	int _i;
+
+	LPPU _lppu = (LPPU)FragAlloc( numParam_ * sizeof(PU) );
+	if( !_lppu )
+	{
+		LOGERR0( "try to allocate parameter failed" );
+		return _lppu;
+	}
+
+	for( _i=0; _i<numParam_; _i++ )
+	{
+		_lppu[_i].flags = PU_DIRTY;
+	}
+
+	return _lppu;
+}
+
+_DLLEXP LPPU _DLLFUNC ParamFree( LPPU lppu_ )
+{
+	return FragFree(lppu_);
+}

@@ -1,0 +1,11 @@
+#define DLG_MATRIX	1
+#define DLG_LINKMATRIX 2
+
+#define IDC_MATRIX_COL	104
+#define IDC_MATRIX_DEFAULT	102
+#define IDC_MATRIX_ROW	103
+#define CM_KEY101	101
+
+#define IDC_DATALINK	110
+#define IDC_VALUE		111
+

@@ -1,0 +1,93 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "AlgoRes.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "AlgoRes.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_TIMER               ICON    DISCARDABLE     "res\\Timer.ico"
+IDI_ADDR                ICON    DISCARDABLE     "res\\AddR1.ico"
+IDI_ADDS                ICON    DISCARDABLE     "res\\AddS1.ico"
+IDI_CLOSEWND            ICON    DISCARDABLE     "res\\CloseWindow.ico"
+IDI_EXCHANGER           ICON    DISCARDABLE     "res\\ExchangeX.ico"
+IDI_GENERATOR           ICON    DISCARDABLE     "res\\Generator.ico"
+IDI_RNDN                ICON    DISCARDABLE     "res\\RanxI.ico"
+IDI_RNDR                ICON    DISCARDABLE     "res\\RanxR1.ico"
+IDI_REPLACEWND          ICON    DISCARDABLE     "res\\ReplaceWindow.ico"
+IDI_RNDR2               ICON    DISCARDABLE     "res\\RndxR.ico"
+IDI_SHOWWND             ICON    DISCARDABLE     "res\\ShowWindow.ico"
+IDI_STAIR               ICON    DISCARDABLE     "res\\stair.ico"
+IDI_TEST                ICON    DISCARDABLE     "res\\test.ico"
+IDI_ADDN                ICON    DISCARDABLE     "res\\AddInt1.ico"
+IDI_SIN                 ICON    DISCARDABLE     "res\\sine.ico"
+IDI_TIMER1              ICON    DISCARDABLE     "res\\timer1.ico"
+IDI_MINUSR              ICON    DISCARDABLE     "res\\minusr.ico"
+IDI_MINUSN              ICON    DISCARDABLE     "res\\minusn.ico"
+IDI_DIVIDER             ICON    DISCARDABLE     "res\\divider.ico"
+IDI_MULTIR              ICON    DISCARDABLE     "res\\multir.ico"
+IDI_ORB                 ICON    DISCARDABLE     "res\\orb.ico"
+IDI_ANDB                ICON    DISCARDABLE     "res\\andb.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

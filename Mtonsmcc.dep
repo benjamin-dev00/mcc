@@ -1,0 +1,248 @@
+# Microsoft Developer Studio Generated Dependency File, included by Mtonsmcc.mak
+
+.\MtIdchec.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtidtran.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfcmdmc.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtiniall.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtrdcvme.c : \
+	"..\microsoft visual studio\vc98\include\basetsd.h"\
+	".\algo.h"\
+	".\algodef.h"\
+	".\calgo.h"\
+	".\cmodu.h"\
+	".\cobj.h"\
+	".\core.h"\
+	".\corerw.h"\
+	".\cpcdef.h"\
+	".\cpu.h"\
+	".\form.h"\
+	".\mtconst.h"\
+	".\mtexport.h"\
+	".\mthandle.h"\
+	".\mtid.h"\
+	".\mtlocate.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\onworld.h"\
+	".\prehead.h"\
+	".\tfalgo.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	".\tfstruct.h"\
+	".\zassert.h"\
+	".\zsyslib.h"\
+	
+
+.\Mtrdcvst.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtrddata.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtrddvme.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtrddvst.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtrdgvme.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtrdgvst.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtrdmvme.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtrdmvst.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtrdtagd.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwtcvme.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwtcvst.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwtdata.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwtdvme.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwtdvst.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwtgvme.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwtgvst.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwtmvme.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwtmvst.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	
+
+.\Mtwttagd.c : \
+	".\cpu.h"\
+	".\form.h"\
+	".\mtexport.h"\
+	".\mtstruct.h"\
+	".\obj.h"\
+	".\tfmat.h"\
+	".\tfmcv.h"\
+	

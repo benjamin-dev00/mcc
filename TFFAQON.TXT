@@ -1,0 +1,15 @@
+
+算法开始投运时，两种配置运行方式，ONSPEC配置及数据文件配置，对用户考虑，
+应该从ONPSEC读取所有的数据，出于调试方便考虑，加入文件启动方式。因此，
+将在文件全局参数中加入选择参数。
+1. After read the fault value from the file, it should be adjusted by the flag of Fault.
+2. 两种状态: 调试及运行分开
+3. 手自动切换
+4. 算法独立性
+	阶越响应将从文件读入，具体格式待定;
+	对象输出的读入也将提供一个文件
+5. 权系数调整方式
+6. 算法启动，中止，暂停
+7. 采样时间的处理
+8. LP模型失配, IRV实施后稳态CV超限...
+9 A/M, when begin to be controlled

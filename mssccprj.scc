@@ -1,0 +1,25 @@
+SCC = This is a Source Code Control file
+
+[MTONSMCC.MAK]
+SCC_Aux_Path = "D:\Microsoft Visual Studio\Common\VSS"
+SCC_Project_Name = "$/MCC", KNAAAAAA
+
+[Mtonsmcc.dsp]
+SCC_Aux_Path = "D:\Microsoft Visual Studio\Common\VSS"
+SCC_Project_Name = "$/MCC", KNAAAAAA
+
+[ONMCC.DSP]
+SCC_Aux_Path = "D:\Microsoft Visual Studio\Common\VSS"
+SCC_Project_Name = "$/MCC", KNAAAAAA
+
+[TFZMCC.DSP]
+SCC_Aux_Path = "D:\Microsoft Visual Studio\Common\VSS"
+SCC_Project_Name = "$/MCC", KNAAAAAA
+
+[zmcc.dsp]
+SCC_Aux_Path = "D:\Microsoft Visual Studio\Common\VSS"
+SCC_Project_Name = "$/MCC", KNAAAAAA
+
+[DynDBio.dsp]
+SCC_Aux_Path = "\\Compaqserver\Vss\"
+SCC_Project_Name = "$/MCC____/OldMCC/MCC/DynDBio", LSEAAAAA

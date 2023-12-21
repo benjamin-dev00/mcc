@@ -1,0 +1,108 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Mtonsmcc - Win32 Run--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSPC4.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FR"Mtonsmcc___Win32_Run/" /Fp"Mtonsmcc___Win32_Run/Mtonsmcc.pch" /Yu"tfalgo.h" /Fo"Mtonsmcc___Win32_Run/" /Fd"Mtonsmcc___Win32_Run/" /FD /c 
+"E:\VCWorkShop\MCC\MtIdchec.c"
+"E:\VCWorkShop\MCC\Mtidtran.c"
+"E:\VCWorkShop\MCC\Mtiniall.c"
+"E:\VCWorkShop\MCC\Mtrdcvst.c"
+"E:\VCWorkShop\MCC\Mtrddata.c"
+"E:\VCWorkShop\MCC\Mtrddvme.c"
+"E:\VCWorkShop\MCC\Mtrddvst.c"
+"E:\VCWorkShop\MCC\Mtrdgvme.c"
+"E:\VCWorkShop\MCC\Mtrdgvst.c"
+"E:\VCWorkShop\MCC\Mtrdmvme.c"
+"E:\VCWorkShop\MCC\Mtrdmvst.c"
+"E:\VCWorkShop\MCC\Mtrdtagd.c"
+"E:\VCWorkShop\MCC\Mtwtcvme.c"
+"E:\VCWorkShop\MCC\Mtwtcvst.c"
+"E:\VCWorkShop\MCC\Mtwtdata.c"
+"E:\VCWorkShop\MCC\Mtwtdvme.c"
+"E:\VCWorkShop\MCC\Mtwtdvst.c"
+"E:\VCWorkShop\MCC\Mtwtgvme.c"
+"E:\VCWorkShop\MCC\Mtwtgvst.c"
+"E:\VCWorkShop\MCC\Mtwtmvme.c"
+"E:\VCWorkShop\MCC\Mtwtmvst.c"
+"E:\VCWorkShop\MCC\Mtwttagd.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSPC4.tmp" 
+Creating temporary file "C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSPC5.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FR"Mtonsmcc___Win32_Run/" /Fp"Mtonsmcc___Win32_Run/Mtonsmcc.pch" /Yc"tfalgo.h" /Fo"Mtonsmcc___Win32_Run/" /Fd"Mtonsmcc___Win32_Run/" /FD /c 
+"E:\VCWorkShop\MCC\Mtrdcvme.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSPC5.tmp" 
+Creating temporary file "C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSPC6.tmp" with contents
+[
+/nologo /subsystem:windows /dll /incremental:yes /pdb:"Run_Debug/Mtonsmcc.pdb" /debug /machine:I386 /out:"Run_Debug/Mtonsmcc.dll" /implib:"Run_Debug/Mtonsmcc.lib" /pdbtype:sept 
+.\Mtonsmcc___Win32_Run\MtIdchec.obj
+.\Mtonsmcc___Win32_Run\Mtidtran.obj
+.\Mtonsmcc___Win32_Run\Mtiniall.obj
+.\Mtonsmcc___Win32_Run\Mtrdcvme.obj
+.\Mtonsmcc___Win32_Run\Mtrdcvst.obj
+.\Mtonsmcc___Win32_Run\Mtrddata.obj
+.\Mtonsmcc___Win32_Run\Mtrddvme.obj
+.\Mtonsmcc___Win32_Run\Mtrddvst.obj
+.\Mtonsmcc___Win32_Run\Mtrdgvme.obj
+.\Mtonsmcc___Win32_Run\Mtrdgvst.obj
+.\Mtonsmcc___Win32_Run\Mtrdmvme.obj
+.\Mtonsmcc___Win32_Run\Mtrdmvst.obj
+.\Mtonsmcc___Win32_Run\Mtrdtagd.obj
+.\Mtonsmcc___Win32_Run\Mtwtcvme.obj
+.\Mtonsmcc___Win32_Run\Mtwtcvst.obj
+.\Mtonsmcc___Win32_Run\Mtwtdata.obj
+.\Mtonsmcc___Win32_Run\Mtwtdvme.obj
+.\Mtonsmcc___Win32_Run\Mtwtdvst.obj
+.\Mtonsmcc___Win32_Run\Mtwtgvme.obj
+.\Mtonsmcc___Win32_Run\Mtwtgvst.obj
+.\Mtonsmcc___Win32_Run\Mtwtmvme.obj
+.\Mtonsmcc___Win32_Run\Mtwtmvst.obj
+.\Mtonsmcc___Win32_Run\Mtwttagd.obj
+.\Onworld.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\CHENZH~1.OUT\LOCALS~1\Temp\RSPC6.tmp"
+<h3>Output Window</h3>
+Compiling...
+Mtrdcvme.c
+Compiling...
+MtIdchec.c
+Mtidtran.c
+Mtiniall.c
+Mtrdcvst.c
+Mtrddata.c
+Mtrddvme.c
+Mtrddvst.c
+Mtrdgvme.c
+Mtrdgvst.c
+Mtrdmvme.c
+Mtrdmvst.c
+Mtrdtagd.c
+Mtwtcvme.c
+Mtwtcvst.c
+Mtwtdata.c
+Mtwtdvme.c
+Mtwtdvst.c
+Mtwtgvme.c
+Mtwtgvst.c
+Mtwtmvme.c
+Generating Code...
+Compiling...
+Mtwtmvst.c
+Mtwttagd.c
+Generating Code...
+Linking...
+
+
+
+<h3>Results</h3>
+Mtonsmcc.dll - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>
